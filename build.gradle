@@ -6,7 +6,7 @@ buildscript {
         classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.3.0'
         classpath 'nu.studer:gradle-plugindev-plugin:1.0.4'
         classpath 'org.codehaus.groovy:groovy-backports-compat23:2.4.6'
-        classpath 'net.researchgate:gradle-release:2.6.0'
+        classpath 'net.researchgate:gradle-release:2.8.1'
     }
 }
 
@@ -36,6 +36,10 @@ plugindev {
     projectUrl 'https://github.com/researchgate/gradle-release'
     projectInceptionYear '2011'
     done() // do not omit this
+}
+
+jar {
+    classifier = project.ext.classifier
 }
 
 release {
@@ -84,7 +88,7 @@ artifactory {
 
 afterReleaseBuild.dependsOn bintrayUpload
 
-wrapper.gradleVersion = '1.12'
+wrapper.gradleVersion = '4.8.1'
 
 updateVersion.doFirst {
     def file = file('README.md')
