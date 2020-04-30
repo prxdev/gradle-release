@@ -23,6 +23,9 @@ public class PluginHelperVersionPropertyFileTests extends Specification {
     File testDir = new File("build/tmp/test/${getClass().simpleName}")
 
     def setup() {
+        if (!testDir.exists()) {
+            testDir.mkdirs()
+        }
         project = ProjectBuilder.builder().withName("ReleasePluginTest").withProjectDir(testDir).build()
         project.version = '1.1'
         project.apply plugin: ReleasePlugin
@@ -31,7 +34,9 @@ public class PluginHelperVersionPropertyFileTests extends Specification {
         helper = new PluginHelper(project: project, extension: project.extensions['release'] as ReleaseExtension)
 
         def props = project.file("gradle.properties")
-        props.withWriter {it << "version=${project.version}"}
+        props.withWriter {w ->
+            w.writeLine "version=${project.version}"
+        }
     }
 
     def cleanup() {
@@ -106,7 +111,8 @@ public class PluginHelperVersionPropertyFileTests extends Specification {
         project.release {
             versionProperties = ['version1', 'version2']
         }
-        project.createScmAdapter.execute()
+        //project.createScmAdapter.execute()
+        project.tasks["createScmAdapter"].execute()
         when:
         project.initScmAdapter.execute()
         helper.updateVersionProperty('2.6')
