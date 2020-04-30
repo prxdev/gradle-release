@@ -42,14 +42,6 @@ plugindev {
 
 jar {
     classifier = project.ext.classifier
-    // a duplicatesStrategy is needed because plugindev incorrectly generates an empty gradle plugin spec file at
-    // build/plugindev/generated-resources/main/META-INF/gradle-plugins/net.researchgate.release.properties,
-    // so we needed to create our own manually at src/main/resources/META-INF/gradle-plugins/net.researchgate.release.properties.
-    // Unfortunately, JAR was including both files, and when the plugin was getting used, gradle would end up trying to
-    // use the generated (i.e. empty) file, and wouldn't be able to resolve the plugin implementation class.  Using
-    // a duplicatesStrategy here seems to make it choose the non-empty file, which then allows the plugin
-    // implementation class to be resolved correctly.
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 release {
@@ -98,7 +90,7 @@ artifactory {
 
 afterReleaseBuild.dependsOn bintrayUpload
 
-wrapper.gradleVersion = '4.8.1'
+wrapper.gradleVersion = '6.2'
 
 updateVersion.doFirst {
     def file = file('README.md')
