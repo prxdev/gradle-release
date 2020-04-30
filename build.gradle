@@ -4,7 +4,7 @@ buildscript {
     }
     dependencies {
         classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.15.2'
-        classpath 'nu.studer:gradle-plugindev-plugin:1.0.4'
+        classpath 'nu.studer:gradle-plugindev-plugin:1.0.12'
         classpath 'org.codehaus.groovy:groovy-backports-compat23:2.4.6'
         classpath 'net.researchgate:gradle-release:2.8.1'
     }
@@ -26,6 +26,8 @@ dependencies {
 }
 
 plugindev {
+    pluginId 'net.researchgate.release'
+    //pluginName 'gradle-release'
     pluginImplementationClass 'net.researchgate.release.ReleasePlugin'
     pluginDescription 'gradle-release is a plugin for providing a Maven-like release process to project using Gradle.'
     pluginLicenses 'MIT'
@@ -40,6 +42,14 @@ plugindev {
 
 jar {
     classifier = project.ext.classifier
+    // a duplicatesStrategy is needed because plugindev incorrectly generates an empty gradle plugin spec file at
+    // build/plugindev/generated-resources/main/META-INF/gradle-plugins/net.researchgate.release.properties,
+    // so we needed to create our own manually at src/main/resources/META-INF/gradle-plugins/net.researchgate.release.properties.
+    // Unfortunately, JAR was including both files, and when the plugin was getting used, gradle would end up trying to
+    // use the generated (i.e. empty) file, and wouldn't be able to resolve the plugin implementation class.  Using
+    // a duplicatesStrategy here seems to make it choose the non-empty file, which then allows the plugin
+    // implementation class to be resolved correctly.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 release {
@@ -100,3 +110,27 @@ updateVersion.doFirst {
             "net.researchgate:gradle-release:${version}")
     file.text = content
 }
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+
+    repositories {
+        maven {
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+            if (project.version.endsWith('-SNAPSHOT')) {
+                url = 'https://build-nexus.prxdev.com/repository/maven-snapshots-s3'
+            }
+            else {
+                url = 'https://build-nexus.prxdev.com/repository/maven-releases-s3'
+            }
+        }
+    }
+}
+
